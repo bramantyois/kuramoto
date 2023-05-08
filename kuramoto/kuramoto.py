@@ -12,12 +12,13 @@ def kuramoto(omega, t, k, theta, seed=None):
     theta: phases of oscillators
     """
     set_seed(seed)
+    
     n_osc = len(omega)
+    one_per_osc = 1.0 / n_osc
+    
     d_omega_dt = omega.copy()
 
     for i, j in np.ndindex((n_osc, n_osc)):
-        d_omega_dt[i] += np.sin(theta[j] - theta[i])
-
-    d_omega_dt *= k / n_osc
+        d_omega_dt[i] += k * one_per_osc * np.sin(theta[j] - theta[i])
 
     return d_omega_dt
