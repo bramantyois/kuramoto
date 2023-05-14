@@ -2,7 +2,7 @@ import numpy as np
 from kuramoto.utils import set_seed
 
 
-def kuramoto(omega, t, k, theta, seed=None):
+def kuramoto(omega, t, k, theta, simulate_noise=False, seed=None):
     """
     Kuramoto Model
     

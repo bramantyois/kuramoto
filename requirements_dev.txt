@@ -1,3 +1,4 @@
 pandas 
-pylint
+pylance
 jupyterlab
+flake8
