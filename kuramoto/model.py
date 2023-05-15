@@ -5,6 +5,20 @@ from neurolib.models.model import Model
 
 
 class KuramotoModel(Model):
+    """
+    Kuramoto Model
+    """
+
+    name = "kuramoto"
+    description = "Kuramoto Model"
+
+    init_vars = ['xs_init', 'x_ou']
+    state_vars = ['xs', 'x_ou']
+    output_vars = ['xs', 'x_ou']
+    default_output = 'xs'
+    input_vars = None
+    default_input = None
+
     def __init__(self, params=None, seed=None):
         self.seed = seed
         

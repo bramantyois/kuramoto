@@ -18,7 +18,7 @@ def timeIntegration(params):
     RNGseed = params["seed"]  # seed for RNG
 
     # model parameters
-    N = params["num_osc"]  # number of oscillators
+    N = params["N"]  # number of oscillators
     omega = params["omega"]  # frequencies of oscillators
     k = params["k"]  # coupling strength
 
@@ -43,7 +43,7 @@ def timeIntegration(params):
     # ---------------------------
     x_s = np.zeros((N, len(t)+1))
     
-    x_ou = params['x_ou']
+    x_ou = np.zeros_like(x_s)
     noise_x_ou = np.random.standard_normal(size=(N, len(t)))
     
     # ---------------------------
@@ -59,7 +59,7 @@ def timeIntegration(params):
     # ---------------------------   
 
     # initial values for thetas
-    x_s[:,0] = params['xs_init']
+    x_s[:,[0]] = params['xs_init']
     
     timeIntegration_njit_elementwise(
         t,
@@ -108,7 +108,8 @@ def timeIntegration_njit_elementwise(
 
         x_s[:,i] = x_s[:,i-1] + dt * (
             omega +  
-            x_rhs + 
-            x_ou[i]) 
+            x_rhs)
+            # x_ou[i]
+            # ) 
 
     return t, x_s, x_ou
