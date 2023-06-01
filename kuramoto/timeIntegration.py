@@ -61,6 +61,35 @@ def timeIntegration(params):
     # initial values for thetas
     x_s[:,[0]] = params['xs_init']
     
+    # ------------------------------------------------------------------------
+    # global coupling parameters
+    # ------------------------------------------------------------------------
+#TO CHECK, added from other models
+
+    # Connectivity matrix
+    # Interareal relative coupling strengths (values between 0 and 1), Cmat(i,j) connnection from jth to ith
+    Cmat = params["Cmat"]
+    N = len(Cmat)  # Number of nodes
+    
+    k = params["k"]  # coupling strength
+    #K_gl = params["K_gl"]  # global coupling strength ?
+    
+    # Interareal connection delay
+    lengthMat = params["lengthMat"]
+    signalV = params["signalV"]
+
+    if N == 1:
+        Dmat = np.zeros((N, N))
+    else:
+        # Interareal connection delays, Dmat(i,j) Connnection from jth node to ith (ms)
+        Dmat = mu.computeDelayMatrix(lengthMat, signalV)
+        # no self-feedback delay
+        Dmat[np.eye(len(Dmat)) == 1] = np.zeros(len(Dmat))
+    Dmat_ndt = np.around(Dmat / dt).astype(int)  # delay matrix in multiples of dt
+
+    # do we need here Additive or diffusive coupling scheme ?
+   
+         
     timeIntegration_njit_elementwise(
         t,
         dt,
@@ -68,6 +97,8 @@ def timeIntegration(params):
         N,
         omega,
         k,
+        Cmat,
+        Dmat,
         x_s,
         tau_ou,
         sigma_ou,
@@ -85,9 +116,9 @@ def timeIntegration_njit_elementwise(
     N,
     omega,
     k,
-    
+    Cmat,
+    Dmat,
     x_s,
-    
     tau_ou,
     sigma_ou,
     x_ou,
@@ -98,18 +129,16 @@ def timeIntegration_njit_elementwise(
     Kuramoto Model 
     """
     k_n = k/N
+
     for i in range(1, len(t)):
-        # Ornstein-Uhlenbeck process
-        x_ou[i] = x_ou[i-1] + (x_ou_mean-x_ou[i-1]) * dt / tau_ou + sigma_ou * sqrt_dt * noise_x_ou[:, i-1]
-        
-        x_rhs = np.zeros((N, 1))
-        for n, m in np.ndindex((N, N)):
-            x_rhs[n] += k_n * np.sin(x_s[m,n-1] - x_s[n,n-1])
+            # Ornstein-Uhlenbeck process
+            x_ou[i] = x_ou[i-1] + (x_ou_mean - x_ou[i-1]) * dt / tau_ou 
+                                    + sigma_ou * np.sqrt(dt) * noise_x_ou[:, i-1]
 
-        x_s[:,i] = x_s[:,i-1] + dt * (
-            omega +  
-            x_rhs)
-            # x_ou[i]
-            # ) 
+            x_rhs = np.zeros((N, 1))
+            for n, m in np.ndindex((N, N)):
+                x_rhs[n] += k_n * Cmat[n, m] * np.sin(x_s[m, n-1] - x_s[n, n-1] - Dmat[n, m])
 
-    return t, x_s, x_ou
+            x_s[:, i] = x_s[:, i-1] + dt * (omega + x_rhs)
+
+        return t, x_s, x_ou
