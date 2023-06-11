@@ -44,7 +44,7 @@ def timeIntegration(params):
     theta_s = np.zeros((N, len(t)+1))
     
     theta_ou = np.zeros_like(theta_s)
-    noise_x_ou = np.random.standard_normal(size=(N, len(t)))
+    noise_theta_ou = np.random.standard_normal(size=(N, len(t)))
     
     # ---------------------------
     # simulation param
@@ -104,7 +104,7 @@ def timeIntegration(params):
         sigma_ou,
         theta_ou,
         theta_ou_mean,
-        noise_x_ou,
+        noise_theta_ou,
     )
 
 
@@ -123,7 +123,7 @@ def timeIntegration_njit_elementwise(
     sigma_ou,
     theta_ou,
     theta_ou_mean,
-    noise_x_ou,
+    noise_theta_ou,
 ):
     """
     Kuramoto Model 
@@ -133,12 +133,12 @@ def timeIntegration_njit_elementwise(
     for i in range(1, len(t)):
             # Ornstein-Uhlenbeck process
             theta_ou[i] = theta_ou[i-1] + (theta_ou_mean - theta_ou[i-1]) * dt / tau_ou 
-                                    + sigma_ou * np.sqrt(dt) * noise_x_ou[:, i-1]
+                                    + sigma_ou * np.sqrt(dt) * noise_theta_ou[:, i-1]
 
-            x_rhs = np.zeros((N, 1))
+            theta_rhs = np.zeros((N, 1))
             for n, m in np.ndindex((N, N)):
-                x_rhs[n] += k_n * Cmat[n, m] * np.sin(theta_s[m, n-1] - theta_s[n, n-1] - Dmat[n, m])
+                theta_rhs[n] += k_n * Cmat[n, m] * np.sin(theta_s[m, n-1] - theta_s[n, n-1] - Dmat[n, m])
 
-            theta_s[:, i] = theta_s[:, i-1] + dt * (omega + x_rhs)
+            theta_s[:, i] = theta_s[:, i-1] + dt * (omega + theta_rhs)
 
         return t, theta_s, theta_ou
