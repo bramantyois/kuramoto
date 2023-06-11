@@ -12,10 +12,10 @@ class KuramotoModel(Model):
     name = "kuramoto"
     description = "Kuramoto Model"
 
-    init_vars = ['xs_init', 'x_ou']
-    state_vars = ['xs', 'x_ou']
-    output_vars = ['xs', 'x_ou']
-    default_output = 'xs'
+    init_vars = ['theta_init', 'theta_ou']
+    state_vars = ['theta', 'theta_ou']
+    output_vars = ['theta', 'theta_ou']
+    default_output = 'theta'
     input_vars = None
     default_input = None
 
