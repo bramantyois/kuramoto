@@ -25,7 +25,7 @@ def timeIntegration(params):
     # ornstein uhlenbeck noise param
     tau_ou = params["tau_ou"]  # noise time constant
     sigma_ou = params["sigma_ou"]  # noise strength
-    theta_ou_mean = params["x_ou_mean"]
+    theta_ou_mean = params["theta_ou_mean"]
     
     # ---------------------------
     # Seed the RNG
@@ -41,9 +41,9 @@ def timeIntegration(params):
     # ---------------------------
     # Placeholders
     # ---------------------------
-    x_s = np.zeros((N, len(t)+1))
+    theta_s = np.zeros((N, len(t)+1))
     
-    theta_ou = np.zeros_like(x_s)
+    theta_ou = np.zeros_like(theta_s)
     noise_x_ou = np.random.standard_normal(size=(N, len(t)))
     
     # ---------------------------
@@ -59,7 +59,7 @@ def timeIntegration(params):
     # ---------------------------   
 
     # initial values for thetas
-    x_s[:,[0]] = params['xs_init']
+    theta_s[:,[0]] = params['theta_init']
     
     # ------------------------------------------------------------------------
     # global coupling parameters
@@ -99,7 +99,7 @@ def timeIntegration(params):
         k,
         Cmat,
         Dmat,
-        x_s,
+        theta_s,
         tau_ou,
         sigma_ou,
         theta_ou,
@@ -118,7 +118,7 @@ def timeIntegration_njit_elementwise(
     k,
     Cmat,
     Dmat,
-    x_s,
+    theta_s,
     tau_ou,
     sigma_ou,
     theta_ou,
@@ -137,8 +137,8 @@ def timeIntegration_njit_elementwise(
 
             x_rhs = np.zeros((N, 1))
             for n, m in np.ndindex((N, N)):
-                x_rhs[n] += k_n * Cmat[n, m] * np.sin(x_s[m, n-1] - x_s[n, n-1] - Dmat[n, m])
+                x_rhs[n] += k_n * Cmat[n, m] * np.sin(theta_s[m, n-1] - theta_s[n, n-1] - Dmat[n, m])
 
-            x_s[:, i] = x_s[:, i-1] + dt * (omega + x_rhs)
+            theta_s[:, i] = theta_s[:, i-1] + dt * (omega + x_rhs)
 
-        return t, x_s, theta_ou
+        return t, theta_s, theta_ou
