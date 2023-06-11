@@ -25,7 +25,7 @@ def timeIntegration(params):
     # ornstein uhlenbeck noise param
     tau_ou = params["tau_ou"]  # noise time constant
     sigma_ou = params["sigma_ou"]  # noise strength
-    x_ou_mean = params["x_ou_mean"]
+    theta_ou_mean = params["x_ou_mean"]
     
     # ---------------------------
     # Seed the RNG
@@ -43,7 +43,7 @@ def timeIntegration(params):
     # ---------------------------
     x_s = np.zeros((N, len(t)+1))
     
-    x_ou = np.zeros_like(x_s)
+    theta_ou = np.zeros_like(x_s)
     noise_x_ou = np.random.standard_normal(size=(N, len(t)))
     
     # ---------------------------
@@ -102,8 +102,8 @@ def timeIntegration(params):
         x_s,
         tau_ou,
         sigma_ou,
-        x_ou,
-        x_ou_mean,
+        theta_ou,
+        theta_ou_mean,
         noise_x_ou,
     )
 
@@ -121,8 +121,8 @@ def timeIntegration_njit_elementwise(
     x_s,
     tau_ou,
     sigma_ou,
-    x_ou,
-    x_ou_mean,
+    theta_ou,
+    theta_ou_mean,
     noise_x_ou,
 ):
     """
@@ -132,7 +132,7 @@ def timeIntegration_njit_elementwise(
 
     for i in range(1, len(t)):
             # Ornstein-Uhlenbeck process
-            x_ou[i] = x_ou[i-1] + (x_ou_mean - x_ou[i-1]) * dt / tau_ou 
+            theta_ou[i] = theta_ou[i-1] + (theta_ou_mean - theta_ou[i-1]) * dt / tau_ou 
                                     + sigma_ou * np.sqrt(dt) * noise_x_ou[:, i-1]
 
             x_rhs = np.zeros((N, 1))
@@ -141,4 +141,4 @@ def timeIntegration_njit_elementwise(
 
             x_s[:, i] = x_s[:, i-1] + dt * (omega + x_rhs)
 
-        return t, x_s, x_ou
+        return t, x_s, theta_ou
